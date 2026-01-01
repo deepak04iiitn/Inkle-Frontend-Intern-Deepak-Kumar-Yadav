@@ -93,7 +93,7 @@ export default function EditModal({ isOpen, onClose, customer, onSave }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200 gap-4">
-          <h2 className="text-2xl font-bold #110733">Edit Customer</h2>
+          <h2 className="text-2xl font-bold text-[#110733]">Edit Customer</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl font-semibold cursor-pointer"
@@ -111,7 +111,7 @@ export default function EditModal({ isOpen, onClose, customer, onSave }) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 bg-[#FAFAFB] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 bg-[#FAFAFB] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
               placeholder="Enter name"
             />
           </div>
@@ -127,7 +127,7 @@ export default function EditModal({ isOpen, onClose, customer, onSave }) {
                 value={country}
                 readOnly
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className= "w-full px-4 py-2 bg-[#FAFAFB] border rounded-lg focus:outline-none cursor-pointer border-gray-200"
+                className= "w-full px-4 py-2 bg-[#FAFAFB] border rounded-lg focus:outline-none cursor-pointer border-gray-200 text-gray-900"
                 placeholder="Select country"
               />
 
