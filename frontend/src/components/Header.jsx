@@ -9,7 +9,7 @@ export default function Header() {
     <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
- \
+
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-transform">
@@ -67,7 +67,7 @@ export default function Header() {
             </div>
 
           </div>
-          
+
         </div>
       </div>
     </header>
