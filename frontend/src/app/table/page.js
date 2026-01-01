@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { getTaxes, updateTax } from '../../services/api';
 import EditModal from '../../components/EditModal';
-import { Funnel, SquarePen, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Funnel, SquarePen, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
 
 export default function Table() {
 
@@ -300,9 +300,9 @@ export default function Table() {
             {globalFilter && (
               <button
                 onClick={() => setGlobalFilter('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                ×
+                <X size={16} color="#110733" />
               </button>
             )}
           </div>
@@ -315,28 +315,48 @@ export default function Table() {
               {table.getHeaderGroups().map((headerGroup) => (
 
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
+                  {headerGroup.headers.map((header, index) => {
+                    let paddingClass = 'px-6';
+                    if(header.id === 'entity') {
+                      paddingClass = 'pl-6 pr-2'; 
+                    } else if (header.id === 'gender') {
+                      paddingClass = 'pl-2 pr-6'; 
+                    } else if (header.id === 'requestDate') {
+                      paddingClass = 'pl-6 pr-2'; 
+                     } else if (header.id === 'country') {
+                       paddingClass = 'pl-2 pr-0'; 
+                     } else if (header.id === 'actions') {
+                       paddingClass = 'pl-0 pr-6';
+                     }
+                    
+                    return (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-left text-sm text-gray-500 whitespace-nowrap cursor-pointer"
+                      className={`${paddingClass} py-4 text-left text-sm text-gray-500 whitespace-nowrap cursor-pointer`}
                     >
                       {header.id === 'country' ? (
                         <div className="relative country-filter-container">
-                          <div className="flex items-center gap-2">
-                            <span>Country</span>
-                            <button
-                              onClick={() => setIsCountryFilterOpen(!isCountryFilterOpen)}
-                              className={`text-purple-600 hover:text-purple-700 transition-colors ${
-                                countryFilter.length > 0 ? 'text-purple-700' : ''
-                              }`}
-                            >
-                              <Funnel className="w-4 h-4" />
-                            </button>
-                            {countryFilter.length > 0 && (
-                              <span className="ml-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
-                                {countryFilter.length}
-                              </span>
-                            )}
+                           <div className="flex items-center gap-10">
+                             <span>Country</span>
+ 
+                             <div className="flex items-center gap-1">
+
+                              {countryFilter.length > 0 && (
+                                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+                                  {countryFilter.length}
+                                </span>
+                              )}
+
+                              <button
+                                onClick={() => setIsCountryFilterOpen(!isCountryFilterOpen)}
+                                className={`text-purple-600 hover:text-purple-700 transition-colors ${
+                                  countryFilter.length > 0 ? 'text-purple-700' : ''
+                                }`}
+                              >
+                                <Funnel className="w-4 h-4" />
+                              </button>
+                              
+                            </div>
                           </div>
 
                           {isCountryFilterOpen && (
@@ -345,17 +365,7 @@ export default function Table() {
                                 <div className="px-4 py-2 text-sm text-gray-500">No countries available</div>
                               ) : (
                                 <>
-                                  <div className="px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-700">Filter by Country</span>
-                                    {countryFilter.length > 0 && (
-                                      <button
-                                        onClick={() => setCountryFilter([])}
-                                        className="text-xs text-purple-600 hover:text-purple-700"
-                                      >
-                                        Clear all
-                                      </button>
-                                    )}
-                                  </div>
+
                                   {uniqueCountries.map((country) => (
                                     <label
                                       key={country}
@@ -369,7 +379,7 @@ export default function Table() {
                                         }
                                         className="mr-2"
                                       />
-                                      <span className="text-sm text-gray-700">
+                                      <span className="text-sm text-gray-600">
                                         {country}
                                       </span>
                                     </label>
@@ -386,7 +396,8 @@ export default function Table() {
                         )
                       )}
                     </th>
-                  ))}
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
@@ -404,11 +415,26 @@ export default function Table() {
                     key={row.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-6 py-4 text-sm text-gray-700">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      let paddingClass = 'px-6';
+                      if(cell.column.id === 'entity') {
+                        paddingClass = 'pl-6 pr-2'; 
+                      } else if (cell.column.id === 'gender') {
+                        paddingClass = 'pl-2 pr-6'; 
+                      } else if (cell.column.id === 'requestDate') {
+                        paddingClass = 'pl-6 pr-2'; 
+                       } else if (cell.column.id === 'country') {
+                         paddingClass = 'pl-2 pr-0'; 
+                       } else if (cell.column.id === 'actions') {
+                         paddingClass = 'pl-0 pr-6';
+                      }
+                      
+                      return (
+                        <td key={cell.id} className={`${paddingClass} py-4 text-sm text-gray-700`}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))
               )}
