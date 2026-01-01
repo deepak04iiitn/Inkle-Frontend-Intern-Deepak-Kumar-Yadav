@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getCountries } from '../services/api';
+import { getCountries } from '../../services/api';
 import { ChevronDown, MapPin, Pencil, X } from 'lucide-react';
 
 export default function EditModal({ isOpen, onClose, customer, onSave }) {
@@ -81,7 +81,7 @@ export default function EditModal({ isOpen, onClose, customer, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 rounded-md"
+      className="fixed inset-0 bg-black/10 backdrop-blur-md flex items-center justify-center z-50"
       onClick={(e) => {
         if(e.target === e.currentTarget) {
           onClose();

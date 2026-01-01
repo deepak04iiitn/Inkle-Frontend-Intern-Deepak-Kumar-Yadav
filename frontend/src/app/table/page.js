@@ -7,11 +7,14 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   getPaginationRowModel,
-  flexRender,
 } from '@tanstack/react-table';
 import { getTaxes, updateTax } from '../../services/api';
-import EditModal from '../../components/EditModal';
-import { Funnel, SquarePen, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
+import EditModal from '../../components/table/EditModal';
+import SearchBar from '../../components/table/SearchBar';
+import DataTable from '../../components/table/DataTable';
+import TablePagination from '../../components/table/TablePagination';
+import { createColumns } from '../../components/table/tableColumns';
+import { Loader2 } from 'lucide-react';
 
 export default function Table() {
 
@@ -58,161 +61,23 @@ export default function Table() {
     }
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'entity',
-        header: ({ column }) => {
-          return (
-            <button
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className="flex items-center gap-2 hover:text-purple-600 transition-colors"
-            >
-              Entity
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="w-4 h-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="w-4 h-4" />
-              ) : (
-                <ArrowUpDown className="w-4 h-4 text-gray-400" />
-              )}
-            </button>
-          );
-        },
-        cell: (info) => {
-          const value = info.getValue() || info.row.original.name || info.row.original.entity || 'N/A';
-          return (
-            <span className="text-purple-600 font-medium">
-              {value}
-            </span>
-          );
-        },
-        enableSorting: true,
-      },
-      {
-        accessorKey: 'gender',
-        header: ({ column }) => {
-          return (
-            <button
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className="flex items-center gap-2 hover:text-purple-600 transition-colors"
-            >
-              Gender
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="w-4 h-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="w-4 h-4" />
-              ) : (
-                <ArrowUpDown className="w-4 h-4 text-gray-400" />
-              )}
-            </button>
-          );
-        },
-        cell: (info) => {
-          const gender = info.getValue() || info.row.original.gender;
-          if(!gender) return 'N/A';
-
-          const isMale = gender.toLowerCase() === 'male';
-          return (
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                isMale
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-blue-100 text-blue-700'
-              }`}
-            >
-              {gender}
-            </span>
-          );
-        },
-        enableSorting: true,
-      },
-      {
-        accessorKey: 'requestDate',
-        header: ({ column }) => {
-          return (
-            <button
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className="flex items-center gap-2 hover:text-purple-600 transition-colors"
-            >
-              Request date
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="w-4 h-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="w-4 h-4" />
-              ) : (
-                <ArrowUpDown className="w-4 h-4 text-gray-400" />
-              )}
-            </button>
-          );
-        },
-        cell: (info) => {
-          const date = info.getValue() || info.row.original.request_date || info.row.original['request date'];
-          if(!date) return 'N/A';
-
-          try {
-            const dateObj = new Date(date);
-            if(isNaN(dateObj.getTime())) return date;
-            return dateObj.toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            });
-          } catch {
-            return date;
-          }
-        },
-        enableSorting: true,
-        sortingFn: (rowA, rowB) => {
-          const dateA = rowA.original.requestDate || rowA.original.request_date || rowA.original['request date'];
-          const dateB = rowB.original.requestDate || rowB.original.request_date || rowB.original['request date'];
-          if(!dateA) return 1;
-          if(!dateB) return -1;
-          return new Date(dateA) - new Date(dateB);
-        },
-      },
-      {
-        accessorKey: 'country',
-        header: 'Country',
-        cell: (info) => {
-          const value = info.getValue() || info.row.original.country || 'N/A';
-          return <span>{value}</span>;
-        },
-      },
-      {
-        id: 'actions',
-        header: '',
-        enableSorting: false,
-        cell: (info) => (
-          <button
-            onClick={() => handleEdit(info.row)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <SquarePen size={16} color="#919191" />
-          </button>
-        ),
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => createColumns(handleEdit), []);
 
   const filteredData = useMemo(() => {
-
     let filtered = data;
-    
+
     if(countryFilter.length > 0) {
       filtered = filtered.filter((item) => countryFilter.includes(item.country));
     }
-    
-    if(globalFilter) {
 
+    if(globalFilter) {
       const searchLower = globalFilter.toLowerCase();
       filtered = filtered.filter((item) => {
         const entity = (item.entity || item.name || '').toLowerCase();
         const gender = (item.gender || '').toLowerCase();
         const country = (item.country || '').toLowerCase();
         const date = (item.requestDate || item.request_date || item['request date'] || '').toString().toLowerCase();
-        
+
         return (
           entity.includes(searchLower) ||
           gender.includes(searchLower) ||
@@ -220,9 +85,8 @@ export default function Table() {
           date.includes(searchLower)
         );
       });
-
     }
-    
+
     return filtered;
   }, [data, countryFilter, globalFilter]);
 
@@ -276,243 +140,41 @@ export default function Table() {
 
   if(isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
+          <p className="text-gray-600 font-medium">Loading data...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="min-h-screen bg-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto pt-4">
+        
+        <SearchBar
+          value={globalFilter}
+          onChange={setGlobalFilter}
+          onClear={() => setGlobalFilter('')}
+        />
 
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by entity, gender, country, or date..."
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
+        <DataTable
+          table={table}
+          columns={columns}
+          countryFilter={countryFilter}
+          isCountryFilterOpen={isCountryFilterOpen}
+          setIsCountryFilterOpen={setIsCountryFilterOpen}
+          uniqueCountries={uniqueCountries}
+          handleCountryFilterToggle={handleCountryFilterToggle}
+        />
 
-            {globalFilter && (
-              <button
-                onClick={() => setGlobalFilter('')}
-                className="cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={16} color="#110733" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full">
-
-            <thead className="bg-gray-50 border-b border-gray-200">
-              {table.getHeaderGroups().map((headerGroup) => (
-
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header, index) => {
-                    let paddingClass = 'px-6';
-                    if(header.id === 'entity') {
-                      paddingClass = 'pl-6 pr-2'; 
-                    } else if (header.id === 'gender') {
-                      paddingClass = 'pl-2 pr-6'; 
-                    } else if (header.id === 'requestDate') {
-                      paddingClass = 'pl-6 pr-2'; 
-                     } else if (header.id === 'country') {
-                       paddingClass = 'pl-2 pr-0'; 
-                     } else if (header.id === 'actions') {
-                       paddingClass = 'pl-0 pr-6';
-                     }
-                    
-                    return (
-                    <th
-                      key={header.id}
-                      className={`${paddingClass} py-4 text-left text-sm text-gray-500 whitespace-nowrap cursor-pointer`}
-                    >
-                      {header.id === 'country' ? (
-                        <div className="relative country-filter-container">
-                           <div className="flex items-center gap-10">
-                             <span>Country</span>
- 
-                             <div className="flex items-center gap-1">
-
-                              {countryFilter.length > 0 && (
-                                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
-                                  {countryFilter.length}
-                                </span>
-                              )}
-
-                              <button
-                                onClick={() => setIsCountryFilterOpen(!isCountryFilterOpen)}
-                                className={`text-purple-600 hover:text-purple-700 transition-colors ${
-                                  countryFilter.length > 0 ? 'text-purple-700' : ''
-                                }`}
-                              >
-                                <Funnel className="w-4 h-4" />
-                              </button>
-                              
-                            </div>
-                          </div>
-
-                          {isCountryFilterOpen && (
-                            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-[200px] max-h-60 overflow-auto">
-                              {uniqueCountries.length === 0 ? (
-                                <div className="px-4 py-2 text-sm text-gray-500">No countries available</div>
-                              ) : (
-                                <>
-
-                                  {uniqueCountries.map((country) => (
-                                    <label
-                                      key={country}
-                                      className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={countryFilter.includes(country)}
-                                        onChange={() =>
-                                          handleCountryFilterToggle(country)
-                                        }
-                                        className="mr-2"
-                                      />
-                                      <span className="text-sm text-gray-600">
-                                        {country}
-                                      </span>
-                                    </label>
-                                  ))}
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )
-                      )}
-                    </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {table.getRowModel().rows.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-500">
-                    No data available
-                  </td>
-                </tr>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      let paddingClass = 'px-6';
-                      if(cell.column.id === 'entity') {
-                        paddingClass = 'pl-6 pr-2'; 
-                      } else if (cell.column.id === 'gender') {
-                        paddingClass = 'pl-2 pr-6'; 
-                      } else if (cell.column.id === 'requestDate') {
-                        paddingClass = 'pl-6 pr-2'; 
-                       } else if (cell.column.id === 'country') {
-                         paddingClass = 'pl-2 pr-0'; 
-                       } else if (cell.column.id === 'actions') {
-                         paddingClass = 'pl-0 pr-6';
-                      }
-                      
-                      return (
-                        <td key={cell.id} className={`${paddingClass} py-4 text-sm text-gray-700`}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))
-              )}
-            </tbody>
-
-          </table>
-        </div>
-
-
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-              className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            
-            <button
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-              className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-700">
-              Page{' '}
-              <strong>
-                {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-              </strong>
-            </span>
-
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              {[5, 10, 20, 30, 50].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  Show {pageSize}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="text-sm text-gray-700">
-            Showing <strong>{table.getRowModel().rows.length}</strong> of{' '}
-            <strong>{filteredData.length}</strong> results
-            {globalFilter && (
-              <span className="ml-2 text-purple-600">
-                (filtered from {data.length} total)
-              </span>
-            )}
-          </div>
-
-        </div>
+        <TablePagination
+          table={table}
+          filteredData={filteredData}
+          data={data}
+          globalFilter={globalFilter}
+        />
       </div>
 
       <EditModal
@@ -524,7 +186,6 @@ export default function Table() {
         customer={selectedCustomer}
         onSave={handleSave}
       />
-
     </div>
   );
 }
