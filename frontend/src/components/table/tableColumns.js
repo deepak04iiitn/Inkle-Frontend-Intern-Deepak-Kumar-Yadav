@@ -22,7 +22,7 @@ export const createColumns = (handleEdit) => [
       );
     },
     cell: (info) => {
-      const value = info.getValue() || info.row.original.name || info.row.original.entity || 'N/A';
+      const value = info.getValue() || 'N/A';
       return (
         <span className="text-purple-600 font-medium">
           {value}
@@ -51,7 +51,7 @@ export const createColumns = (handleEdit) => [
       );
     },
     cell: (info) => {
-      const gender = info.getValue() || info.row.original.gender;
+      const gender = info.getValue();
       if(!gender) return 'N/A';
 
       const isMale = gender.toLowerCase() === 'male';
@@ -89,7 +89,7 @@ export const createColumns = (handleEdit) => [
       );
     },
     cell: (info) => {
-      const date = info.getValue() || info.row.original.request_date || info.row.original['request date'];
+      const date = info.getValue();
       if(!date) return 'N/A';
 
       try {
@@ -143,8 +143,8 @@ export const createColumns = (handleEdit) => [
     },
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const dateA = rowA.original.requestDate || rowA.original.request_date || rowA.original['request date'];
-      const dateB = rowB.original.requestDate || rowB.original.request_date || rowB.original['request date'];
+      const dateA = rowA.original.requestDate;
+      const dateB = rowB.original.requestDate;
       if(!dateA) return 1;
       if(!dateB) return -1;
       return new Date(dateA) - new Date(dateB);
@@ -154,7 +154,7 @@ export const createColumns = (handleEdit) => [
     accessorKey: 'country',
     header: 'Country',
     cell: (info) => {
-      const value = info.getValue() || info.row.original.country || 'N/A';
+      const value = info.getValue() || 'N/A';
       return <span>{value}</span>;
     },
   },
