@@ -20,6 +20,7 @@ export default function Table() {
 
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [countryFilter, setCountryFilter] = useState([]);
@@ -34,10 +35,12 @@ export default function Table() {
   const loadData = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const taxes = await getTaxes();
       setData(taxes);
     } catch (error) {
       console.error('Error loading data:', error);
+      setError(error.message || 'Failed to load data. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -144,6 +147,24 @@ export default function Table() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
           <p className="text-gray-600 font-medium">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if(error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4 max-w-md mx-auto p-6">
+          <div className="text-red-600 text-6xl mb-2">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800">Error Loading Data</h2>
+          <p className="text-gray-600 text-center">{error}</p>
+          <button
+            onClick={loadData}
+            className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );

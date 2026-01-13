@@ -7,7 +7,16 @@ export const createColumns = (handleEdit) => [
     header: ({ column }) => {
       return (
         <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => {
+            const currentSort = column.getIsSorted();
+            if (currentSort === false) {
+              column.toggleSorting(false); 
+            } else if (currentSort === 'asc') {
+              column.toggleSorting(true); 
+            } else {
+              column.clearSorting(); 
+            }
+          }}
           className="flex items-center gap-2 hover:text-purple-600 transition-colors"
         >
           Entity
@@ -30,6 +39,23 @@ export const createColumns = (handleEdit) => [
       );
     },
     enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      
+      const valueA = String(rowA.original.entity || '').trim().toLowerCase();
+      const valueB = String(rowB.original.entity || '').trim().toLowerCase();
+      
+      if(!valueA && !valueB) return 0;
+      if(!valueA) return 1;
+      if(!valueB) return -1;
+      
+      const comparison = valueA.localeCompare(valueB, undefined, { 
+        sensitivity: 'base',
+        numeric: true,
+        ignorePunctuation: false
+      });
+      
+      return comparison;
+    },
   },
   {
     accessorKey: 'gender',
